@@ -25,32 +25,25 @@ public class TransactionServiceImpl implements TransactionService {
     private TransactionRepository transactionRepository;
     @Autowired
     private AccountRepository accountRepository;
+    public static final String BANK_ACCOUNT_NUMBER = "1122334455";
 
     @Override
     public TransferResponse transfer(TransferRequest transferRequest) throws InsufficientFundsException, InvalidAmountException, WrongPinException {
         Transaction transaction = Mapper.map(transferRequest);
-
         Account recipientAccount = accountRepository.findByAccountNumber(transferRequest.getRecipientAccountNumber()).get();
         Account senderAccount = accountRepository.findByAccountNumber(transferRequest.getSenderAccountNumber()).get();
         validatePin(transferRequest.getPin(), senderAccount);
-        validateThatBalanceIsNotLesserThanOne(transferRequest.getAmount(), senderAccount);
-        validateThatBalanceIsSufficient(transferRequest.getAmount(), senderAccount);
-        BigDecimal sender_sBalance = senderAccount.getBalance().subtract(transferRequest.getAmount());
-        senderAccount.setBalance(sender_sBalance);
-        accountRepository.save(senderAccount);
-
-        BigDecimal receiver_sBalance = recipientAccount.getBalance().add(transferRequest.getAmount());
-        recipientAccount.setBalance(receiver_sBalance);
-        accountRepository.save(recipientAccount);
-
+        validateThatAmountToTransferIsNotLesserThanOne(transferRequest.getAmount());
+        if (!senderAccount.getAccountNumber().equals(BANK_ACCOUNT_NUMBER)) validateThatBalanceIsSufficient(transferRequest.getAmount(), senderAccount);
+        BigDecimal senderBalance = checkBalance(senderAccount.getAccountNumber()).subtract(transferRequest.getAmount());
+        BigDecimal recipientBalance = checkBalance(recipientAccount.getAccountNumber()).add(transferRequest.getAmount());
         return Mapper.map(transactionRepository.save(transaction));
     }
 
     @Override
     public Transaction findTransactionById(String id) throws TransactionDoesNotExistException {
-        if (transactionRepository.findById(id).isEmpty()) {
+        if (transactionRepository.findById(id).isEmpty())
             throw new TransactionDoesNotExistException("No transactions!");
-        }
         return transactionRepository.findById(id).get();
     }
 
@@ -71,18 +64,15 @@ public class TransactionServiceImpl implements TransactionService {
         return transactions.get();
     }
 
-    private void validateThatBalanceIsNotLesserThanOne(BigDecimal amountToSend, Account senderAccount) throws InvalidAmountException {
-        BigDecimal senderBalance = senderAccount.getBalance();
-        if (senderBalance.compareTo(amountToSend) <= 0) {
-            throw new InvalidAmountException("Invalid amount!");
-        }
+
+    private void validateThatAmountToTransferIsNotLesserThanOne(BigDecimal amountToSend) throws InvalidAmountException {
+        if (amountToSend.compareTo(BigDecimal.ONE) < 0) throw new InvalidAmountException("Invalid amount!");
     }
 
     private void validateThatBalanceIsSufficient(BigDecimal amountToSend, Account senderAccount) throws InsufficientFundsException {
-        BigDecimal senderBalance = senderAccount.getBalance();
-        if (amountToSend.compareTo(senderBalance) <= 0) {
-            throw new InsufficientFundsException("Insufficient funds!");
-        }
+        BigDecimal senderBalance = checkBalance(senderAccount.getAccountNumber());
+        System.out.println(senderBalance.toString());
+        if (senderBalance.compareTo(amountToSend) < 0) throw new InsufficientFundsException("Insufficient funds!");
     }
 
     private void validatePin(int pin, Account senderAccount) throws WrongPinException {
@@ -90,6 +80,26 @@ public class TransactionServiceImpl implements TransactionService {
         if (senderPin != pin) {
             throw new WrongPinException("Wrong pin!");
         }
+    }
+
+    @Override
+    public BigDecimal checkBalance(String accountNumber) {
+        Optional<List<Transaction>> senderTransactions = transactionRepository.findAllBySenderAccountNumber(accountNumber);
+        Optional<List<Transaction>> recipientTransactions = transactionRepository.findAllByRecipientAccountNumber(accountNumber);
+        BigDecimal totalAmountOfRecipientTransactions = BigDecimal.valueOf(0);
+        BigDecimal totalAmountOfSenderTransactions = BigDecimal.valueOf(0);
+        if (senderTransactions.isPresent()) {
+            for (Transaction transaction : senderTransactions.get()) {
+                totalAmountOfSenderTransactions = totalAmountOfSenderTransactions.add(transaction.getAmount());
+            }
+        }
+
+        if (recipientTransactions.isPresent()) {
+            for (Transaction transaction : recipientTransactions.get()) {
+                totalAmountOfRecipientTransactions = totalAmountOfRecipientTransactions.add(transaction.getAmount());
+            }
+        }
+        return totalAmountOfRecipientTransactions.subtract(totalAmountOfSenderTransactions);
     }
 }
 

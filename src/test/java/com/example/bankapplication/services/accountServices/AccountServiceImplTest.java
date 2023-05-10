@@ -3,6 +3,10 @@ package com.example.bankapplication.services.accountServices;
 import com.example.bankapplication.dtos.requests.RegisterAccountRequest;
 import com.example.bankapplication.dtos.responses.RegisterAccountResponse;
 import com.example.bankapplication.exceptions.DuplicateAccountAlreadyExistsException;
+import com.example.bankapplication.exceptions.InsufficientFundsException;
+import com.example.bankapplication.exceptions.InvalidAmountException;
+import com.example.bankapplication.exceptions.WrongPinException;
+import com.example.bankapplication.services.transactionServices.TransactionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,12 +21,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class AccountServiceImplTest {
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private TransactionService transactionService;
     private RegisterAccountRequest registerAccountRequest;
     private RegisterAccountResponse registerAccountResponse;
 
     @BeforeEach
-    public void startEachWith() throws DuplicateAccountAlreadyExistsException {
+    public void startEachWith() throws DuplicateAccountAlreadyExistsException, InsufficientFundsException, InvalidAmountException, WrongPinException {
         accountService.deleteAll();
+        transactionService.deleteAll();
         registerAccountRequest = new RegisterAccountRequest();
         registerAccountRequest.setFirstName("My first name");
         registerAccountRequest.setLastName("My last name");
@@ -45,7 +52,7 @@ class AccountServiceImplTest {
     @Test
     @DisplayName("Test that account is credited with a joining bonus of #1000.00 naira")
     public void testThatAccountIsCreditedWithAJoiningBonusOfOneThousandNaira(){
-        assertEquals(BigDecimal.valueOf(1000.00), registerAccountResponse.getBalance());
+        assertEquals(BigDecimal.valueOf(1000), transactionService.checkBalance(registerAccountResponse.getAccountNumber()));
     }
 
     @Test
@@ -69,7 +76,7 @@ class AccountServiceImplTest {
         registerAccountRequest1.setDateOfBirth(LocalDate.parse("2004-05-29"));
         registerAccountRequest1.setGender("Female");
         registerAccountRequest1.setAddress("my address");
-        registerAccountRequest1.setEmailAddress("renny@gmail.com"); //validate.
+        registerAccountRequest1.setEmailAddress("renny@gmail.com");
         registerAccountRequest1.setPhoneNumber("0904444445");
         registerAccountRequest1.setPin(1234);
         assertThrows(DuplicateAccountAlreadyExistsException.class, () -> accountService.registerAccount(registerAccountRequest1));

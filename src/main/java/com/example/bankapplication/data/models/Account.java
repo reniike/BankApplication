@@ -4,6 +4,8 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,6 +21,7 @@ public class Account {
     private String gender;
     private String phoneNumber;
     private LocalDate dateOfBirth;
+    @Getter
     private BigDecimal balance;
     private int pin;
 }

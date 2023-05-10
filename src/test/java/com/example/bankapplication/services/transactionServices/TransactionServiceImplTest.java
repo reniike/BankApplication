@@ -35,10 +35,6 @@ class TransactionServiceImplTest {
     TransferResponse transferResponse2;
     TransferResponse transferResponse3;
 
-
-
-
-
     @BeforeEach
     public void startEachWith() throws DuplicateAccountAlreadyExistsException, InsufficientFundsException, InvalidAmountException, WrongPinException {
         accountService.deleteAll();
@@ -54,6 +50,7 @@ class TransactionServiceImplTest {
         registerAccountRequest.setPin(1234);
         registerAccountResponse = accountService.registerAccount(registerAccountRequest);
 
+
         RegisterAccountRequest registerAccountRequest1 = new RegisterAccountRequest();
         registerAccountRequest1.setFirstName("Olamiposi");
         registerAccountRequest1.setLastName("Babs");
@@ -62,7 +59,7 @@ class TransactionServiceImplTest {
         registerAccountRequest1.setAddress("my address");
         registerAccountRequest1.setEmailAddress("posi@gmail.com");
         registerAccountRequest1.setPhoneNumber("0904444445");
-        registerAccountRequest1.setPin(4321);
+        registerAccountRequest1.setPin(1234);
         registerAccountResponse1 = accountService.registerAccount(registerAccountRequest1);
 
         RegisterAccountRequest registerAccountRequest2 = new RegisterAccountRequest();
@@ -73,7 +70,7 @@ class TransactionServiceImplTest {
         registerAccountRequest2.setAddress("my address");
         registerAccountRequest2.setEmailAddress("ope@gmail.com");
         registerAccountRequest2.setPhoneNumber("0904444446");
-        registerAccountRequest2.setPin(4321);
+        registerAccountRequest2.setPin(1234);
         registerAccountResponse2 = accountService.registerAccount(registerAccountRequest2);
 
         TransferRequest transferRequest = new TransferRequest();
@@ -107,19 +104,14 @@ class TransactionServiceImplTest {
         transferRequest3.setPin(1234);
         transferRequest3.setDescription("testing...");
         transferResponse3 = transactionService.transfer(transferRequest3);
-
-        registerAccountResponse = accountService.findAccountByAccountNumber(registerAccountResponse.getAccountNumber());
-        registerAccountResponse1 = accountService.findAccountByAccountNumber(registerAccountResponse1.getAccountNumber());
-        registerAccountResponse2 = accountService.findAccountByAccountNumber(registerAccountResponse2.getAccountNumber());
-
     }
 
     @Test
     @DisplayName("Transfer test")
     public void transferTest(){
-        assertEquals(BigDecimal.valueOf(900.00), registerAccountResponse.getBalance());
-        assertEquals(BigDecimal.valueOf(700.00 ), registerAccountResponse1.getBalance());
-        assertEquals(BigDecimal.valueOf(1400.00), registerAccountResponse2.getBalance());
+        assertEquals(BigDecimal.valueOf(900.0), transactionService.checkBalance(registerAccountResponse.getAccountNumber()));
+        assertEquals(BigDecimal.valueOf(700.00 ),transactionService.checkBalance(registerAccountResponse1.getAccountNumber()));
+        assertEquals(BigDecimal.valueOf(1400.00), transactionService.checkBalance(registerAccountResponse2.getAccountNumber()));
     }
 
     @Test
@@ -133,7 +125,7 @@ class TransactionServiceImplTest {
     @DisplayName("Find all credit transaction tests")
     public void findAllCreditTransactionsTest(){
         List<Transaction> foundCreditTransactions = transactionService.findAllCreditTransactionsById(registerAccountResponse.getAccountNumber());
-        assertEquals(1, foundCreditTransactions.size());
+        assertEquals(2, foundCreditTransactions.size());
     }
 
     @Test
@@ -141,6 +133,25 @@ class TransactionServiceImplTest {
     public void findAllDebitTransactionsTest(){
         List<Transaction> foundDebitTransactions = transactionService.findAllDebitTransactionsById(registerAccountResponse.getAccountNumber());
         assertEquals(3, foundDebitTransactions.size());
+    }
+
+    @Test
+    @DisplayName("Transfer can't be done with the wrong pin")
+    public void transferCannotBeMadeWithAWrongPin() {
+        TransferRequest transferRequest4 = new TransferRequest();
+        transferRequest4.setSenderAccountNumber(registerAccountResponse.getAccountNumber());
+        transferRequest4.setRecipientAccountNumber(registerAccountResponse2.getAccountNumber());
+        transferRequest4.setAmount(BigDecimal.valueOf(100.00));
+        transferRequest4.setPin(1734);
+        transferRequest4.setDescription("Testing testing");
+        assertThrows(WrongPinException.class, () -> transactionService.transfer(transferRequest4));
+    }
+
+    @Test
+    @DisplayName("Find balance test")
+    public void findBalanceTest(){
+       BigDecimal balance = transactionService.checkBalance(registerAccountResponse.getAccountNumber());
+        assertEquals(BigDecimal.valueOf(900.0), balance);
     }
 
 

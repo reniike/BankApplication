@@ -1,5 +1,6 @@
 package com.example.bankapplication.data.repositories;
 
+import com.example.bankapplication.data.models.Account;
 import com.example.bankapplication.data.models.Transaction;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
@@ -11,4 +12,5 @@ public interface TransactionRepository extends MongoRepository<Transaction, Stri
     Optional<List<Transaction>> findAllByRecipientAccountNumber(String recipientAccountNumber);
 
    Optional<List<Transaction>> findAllBySenderAccountNumber(String senderAccountNumber);
+
 }

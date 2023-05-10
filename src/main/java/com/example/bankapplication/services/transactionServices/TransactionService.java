@@ -7,6 +7,8 @@ import com.example.bankapplication.exceptions.InsufficientFundsException;
 import com.example.bankapplication.exceptions.InvalidAmountException;
 import com.example.bankapplication.exceptions.TransactionDoesNotExistException;
 import com.example.bankapplication.exceptions.WrongPinException;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface TransactionService {
@@ -19,4 +21,6 @@ public interface TransactionService {
     void deleteAll();
 
     List<Transaction> findAllDebitTransactionsById(String senderAccountNumber);
+
+    BigDecimal checkBalance(String accountNumber);
 }

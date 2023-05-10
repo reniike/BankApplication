@@ -20,7 +20,6 @@ public class Mapper {
         account.setDateOfBirth(registerAccountRequest.getDateOfBirth());
         account.setPhoneNumber(registerAccountRequest.getPhoneNumber());
         account.setPin(registerAccountRequest.getPin());
-        account.setBalance(BigDecimal.valueOf(1000.00));
         account.setAddress(registerAccountRequest.getAddress());
         return account;
     }
@@ -29,7 +28,6 @@ public class Mapper {
         RegisterAccountResponse accountResponse = new RegisterAccountResponse();
         accountResponse.setFullName(returnedAccount.getFirstName() + " " + returnedAccount.getLastName());
         accountResponse.setAccountNumber(returnedAccount.getAccountNumber());
-        accountResponse.setBalance(returnedAccount.getBalance());
         return accountResponse;
     }
 
