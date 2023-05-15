@@ -7,8 +7,6 @@ import com.example.bankapplication.dtos.requests.TransferRequest;
 import com.example.bankapplication.dtos.responses.RegisterAccountResponse;
 import com.example.bankapplication.dtos.responses.TransferResponse;
 
-import java.math.BigDecimal;
-
 public class Mapper {
     public static Account map(RegisterAccountRequest registerAccountRequest) {
         Account account = new Account();

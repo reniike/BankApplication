@@ -2,17 +2,13 @@ package com.example.bankapplication.services.accountServices;
 
 import com.example.bankapplication.dtos.requests.RegisterAccountRequest;
 import com.example.bankapplication.dtos.responses.RegisterAccountResponse;
-import com.example.bankapplication.exceptions.DuplicateAccountAlreadyExistsException;
-import com.example.bankapplication.exceptions.InsufficientFundsException;
-import com.example.bankapplication.exceptions.InvalidAmountException;
-import com.example.bankapplication.exceptions.WrongPinException;
+import com.example.bankapplication.exceptions.*;
 import com.example.bankapplication.services.transactionServices.TransactionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -27,7 +23,7 @@ class AccountServiceImplTest {
     private RegisterAccountResponse registerAccountResponse;
 
     @BeforeEach
-    public void startEachWith() throws DuplicateAccountAlreadyExistsException, InsufficientFundsException, InvalidAmountException, WrongPinException {
+    public void startEachWith() throws DuplicateAccountAlreadyExistsException, InsufficientFundsException, InvalidAmountException, WrongPinException, PhoneNumberAlreadyExistsException {
         accountService.deleteAll();
         transactionService.deleteAll();
         registerAccountRequest = new RegisterAccountRequest();
@@ -57,7 +53,7 @@ class AccountServiceImplTest {
 
     @Test
     @DisplayName("Find account by account number")
-    public void findAccountTest(){
+    public void findAccountTest() throws AccountNumberDoesNotExistException {
         assertEquals(registerAccountResponse, accountService.findAccountByAccountNumber("904444444"));
     }
 
@@ -81,4 +77,12 @@ class AccountServiceImplTest {
         registerAccountRequest1.setPin(1234);
         assertThrows(DuplicateAccountAlreadyExistsException.class, () -> accountService.registerAccount(registerAccountRequest1));
     }
+
+    @Test
+    @DisplayName("Exception is thrown when you try to get an account that doesn't exist")
+    public void testThatAnExceptionIsThrownWhenYouTryToGetAnAccountNumberThatDoesntExist() throws AccountNumberDoesNotExistException {
+        assertThrows(AccountNumberDoesNotExistException.class, ()-> accountService.findAccountByAccountNumber("123456789"));
+
+    }
+
 }

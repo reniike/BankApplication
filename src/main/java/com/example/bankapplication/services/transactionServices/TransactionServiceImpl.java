@@ -71,7 +71,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     private void validateThatBalanceIsSufficient(BigDecimal amountToSend, Account senderAccount) throws InsufficientFundsException {
         BigDecimal senderBalance = checkBalance(senderAccount.getAccountNumber());
-        System.out.println(senderBalance.toString());
         if (senderBalance.compareTo(amountToSend) < 0) throw new InsufficientFundsException("Insufficient funds!");
     }
 

@@ -10,4 +10,6 @@ public interface AccountRepository extends MongoRepository<Account, String> {
     Optional<Account> findByAccountNumber(String accountNumber);
 
     Optional<Account> findByEmailAddress(String emailAddress);
+
+    Optional<Object> findByPhoneNumber(String phoneNumber);
 }

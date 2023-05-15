@@ -6,18 +6,12 @@ import com.example.bankapplication.data.repositories.TransactionRepository;
 import com.example.bankapplication.dtos.requests.RegisterAccountRequest;
 import com.example.bankapplication.dtos.requests.TransferRequest;
 import com.example.bankapplication.dtos.responses.RegisterAccountResponse;
-import com.example.bankapplication.exceptions.DuplicateAccountAlreadyExistsException;
-import com.example.bankapplication.exceptions.InsufficientFundsException;
-import com.example.bankapplication.exceptions.InvalidAmountException;
-import com.example.bankapplication.exceptions.WrongPinException;
-import com.example.bankapplication.services.transactionServices.TransactionService;
+import com.example.bankapplication.exceptions.*;
 import com.example.bankapplication.services.transactionServices.TransactionServiceImpl;
 import com.example.bankapplication.utils.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
-import java.util.Optional;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -26,8 +20,9 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private TransactionRepository transactionRepository;
     @Override
-    public RegisterAccountResponse registerAccount(RegisterAccountRequest registerAccountRequest) throws DuplicateAccountAlreadyExistsException, InsufficientFundsException, InvalidAmountException, WrongPinException {
+    public RegisterAccountResponse registerAccount(RegisterAccountRequest registerAccountRequest) throws DuplicateAccountAlreadyExistsException, PhoneNumberAlreadyExistsException {
         Account account = Mapper.map(registerAccountRequest);
+        if (accountRepository.findByPhoneNumber(account.getPhoneNumber()).isPresent()) throw new PhoneNumberAlreadyExistsException("Phone number already in use!");
         if (accountRepository.findByEmailAddress(account.getEmailAddress()).isPresent()) throw new DuplicateAccountAlreadyExistsException("Account with this email already exists!");
         Account returnedAccount = accountRepository.save(account);
         TransferRequest transferRequest = new TransferRequest();
@@ -42,9 +37,10 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public RegisterAccountResponse findAccountByAccountNumber(String accountNumber) {
-//        Account foundAccount = accountRepository.findById(accountNumber).get();
-//        return Mapper.map(foundAccount);
+    public RegisterAccountResponse findAccountByAccountNumber(String accountNumber) throws AccountNumberDoesNotExistException {
+        if (accountRepository.findByAccountNumber(accountNumber).isEmpty()) {
+            throw new AccountNumberDoesNotExistException("Account number doesn't exist!");
+        }
         return Mapper.map(accountRepository.findByAccountNumber(accountNumber).get());
     }
 

@@ -3,17 +3,14 @@ package com.example.bankapplication.services.accountServices;
 import com.example.bankapplication.data.models.Account;
 import com.example.bankapplication.dtos.requests.RegisterAccountRequest;
 import com.example.bankapplication.dtos.responses.RegisterAccountResponse;
-import com.example.bankapplication.exceptions.DuplicateAccountAlreadyExistsException;
-import com.example.bankapplication.exceptions.InsufficientFundsException;
-import com.example.bankapplication.exceptions.InvalidAmountException;
-import com.example.bankapplication.exceptions.WrongPinException;
+import com.example.bankapplication.exceptions.*;
 
 import java.math.BigDecimal;
 
 public interface AccountService {
-    RegisterAccountResponse registerAccount(RegisterAccountRequest registerAccountRequest) throws DuplicateAccountAlreadyExistsException, InsufficientFundsException, InvalidAmountException, WrongPinException;
+    RegisterAccountResponse registerAccount(RegisterAccountRequest registerAccountRequest) throws DuplicateAccountAlreadyExistsException, InsufficientFundsException, InvalidAmountException, WrongPinException, PhoneNumberAlreadyExistsException;
 
-    RegisterAccountResponse findAccountByAccountNumber(String accountNumber);
+    RegisterAccountResponse findAccountByAccountNumber(String accountNumber) throws AccountNumberDoesNotExistException;
 
     RegisterAccountResponse findByEmailAddress(String emailAddress);
 

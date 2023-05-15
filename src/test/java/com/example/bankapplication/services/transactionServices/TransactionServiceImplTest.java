@@ -36,7 +36,7 @@ class TransactionServiceImplTest {
     TransferResponse transferResponse3;
 
     @BeforeEach
-    public void startEachWith() throws DuplicateAccountAlreadyExistsException, InsufficientFundsException, InvalidAmountException, WrongPinException {
+    public void startEachWith() throws DuplicateAccountAlreadyExistsException, InsufficientFundsException, InvalidAmountException, WrongPinException, PhoneNumberAlreadyExistsException {
         accountService.deleteAll();
         transactionService.deleteAll();
         RegisterAccountRequest registerAccountRequest = new RegisterAccountRequest();
@@ -153,6 +153,4 @@ class TransactionServiceImplTest {
        BigDecimal balance = transactionService.checkBalance(registerAccountResponse.getAccountNumber());
         assertEquals(BigDecimal.valueOf(900.0), balance);
     }
-
-
 }
